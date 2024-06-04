@@ -1,0 +1,44 @@
+service: QuillStream-serverless
+frameworkVersion: "3"
+
+useDotenv: true
+
+provider:
+    name: aws
+    runtime: nodejs20.x
+    region: us-west-1
+    httpApi:
+        authorizers:
+            jwtCognitoAuthorizer:
+                type: jwt
+                identitySource: $request.header.Authorization
+                issuerUrl: ${env:ISSUER_URL}
+                audience:
+                    - ${env:AUDIENCE}
+        cors:
+            allowedOrigins:
+                - ${env:CLIENT_BASE_URL}
+            allowCredentials: true
+
+package:
+    individually: true
+
+functions: ${file(./serverless-functions.yml)}
+
+plugins:
+    - serverless-esbuild
+    - serverless-iam-roles-per-function
+    - serverless-dotenv-plugin
+
+custom:
+    esbuild:
+        packager: pnpm
+        bundle: true
+        minify: true
+        keepNames: true
+    dotenv:
+        exclude:
+            - ISSUER_URL
+            - AUDIENCE
+        required:
+            file: true
