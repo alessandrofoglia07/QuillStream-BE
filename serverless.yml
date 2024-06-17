@@ -7,20 +7,67 @@ provider:
     name: aws
     runtime: nodejs20.x
     region: us-west-1
-
-environment:
-    WSSAPIGATEWAYENDPOINT:
-        Fn::Join:
-            - ""
-            - - Ref: WebsocketsApi
-              - ".execute-api"
-              - Ref: AWS::Region
-              - ".amazonaws.com/${sls:stage}"
+    websocketApiRouteselectionExpression: $request.body.action
+    httpApi:
+        authorizers:
+            jwtCognitoAuthorizer:
+                type: jwt
+                identitySource: $request.header.Authorization
+                issuerUrl:
+                    Fn::Join:
+                        - ""
+                        - - https://cognito-idp.
+                          - Ref: AWS::Region
+                          - .amazonaws.com/
+                          - Ref: CognitoUserPool
+                audience:
+                    - Ref: CognitoUserPoolClient
+    environment:
+        COGNITO_USER_POOL:
+            Ref: CognitoUserPool
+        COGNITO_USER_POOL_CLIENT:
+            Ref: CognitoUserPoolClient
+        CORS_ORIGIN: ${self:custom.corsOrigin}
+        WEBSOCKET_API_ENDPOINT:
+            Fn::Join:
+                - ""
+                - - Ref: WebsocketsApi
+                  - ".execute-api"
+                  - Ref: AWS::Region
+                  - ".amazonaws.com/${sls:stage}"
 
 package:
     individually: true
 
 functions: ${file(./serverless-functions.yml)}
+
+resources:
+    Resources:
+        CognitoUserPool:
+            Type: AWS::Cognito::UserPool
+            Properties:
+                UserPoolName: ${sls:stage}-${self:service}
+                Policies:
+                    PasswordPolicy:
+                        MinimumLength: 6
+                        RequireLowercase: False
+                        RequireNumbers: True
+                        RequireSymbols: False
+                        RequireUppercase: False
+                UsernameAttributes:
+                    - email
+                AutoVerifiedAttributes:
+                    - email
+        CognitoUserPoolClient:
+            Type: AWS::Cognito::UserPoolClient
+            Properties:
+                ClientName: ${sls:stage}-${self:service}-userpool-client
+                GenerateSecret: False
+                UserPoolId:
+                    Ref: CognitoUserPool
+                ExplicitAuthFlows:
+                    - ALLOW_USER_PASSWORD_AUTH
+                    - ALLOW_REFRESH_TOKEN_AUTH
 
 plugins:
     - serverless-esbuild
@@ -33,9 +80,4 @@ custom:
         bundle: true
         minify: true
         keepNames: true
-    dotenv:
-        exclude:
-            - ISSUER_URL
-            - AUDIENCE
-        required:
-            file: true
+    corsOrigin: "*"
