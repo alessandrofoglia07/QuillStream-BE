@@ -1,2 +1,56 @@
-hello:
-    handler: src/functions/hello.handler
+createDocument:
+    handler: src/functions/http/createDocument.handler
+    events:
+        - httpApi:
+              path: /documents/new
+              method: post
+              authorizer:
+                  name: jwtCognitoAuthorizer
+getDocumentsByUser:
+    handler: src/functions/http/getDocumentsByUser.handler
+    events:
+        - httpApi:
+              path: /documents/user
+              method: get
+              authorizer:
+                  name: jwtCognitoAuthorizer
+getDocument:
+    handler: src/functions/http/getDocument.handler
+    events:
+        - httpApi:
+              path: /documents/{id}
+              method: get
+              authorizer:
+                  name: jwtCognitoAuthorizer
+updateDocument:
+    handler: src/functions/http/updateDocument.handler
+    events:
+        - httpApi:
+              path: /documents/{id}
+              method: put
+              authorizer:
+                  name: jwtCognitoAuthorizer
+deleteDocument:
+    handler: src/functions/http/deleteDocument.handler
+    events:
+        - httpApi:
+              path: /documents/{id}
+              method: delete
+              authorizer:
+                  name: jwtCognitoAuthorizer
+
+websocketConnection:
+    handler: src/functions/websocket/connection.handler
+    events:
+        - websocket:
+              route: $connect
+websocketDisconnection:
+    handler: src/functions/websocket/disconnection.handler
+    events:
+        - websocket:
+              route: $disconnect
+websocketUpdateDocument:
+    handler: src/functions/websocket/updateDocument.handler
+    events:
+        - websocket:
+              route: updateDocument
