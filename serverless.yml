@@ -1,13 +1,10 @@
 service: QuillStream-serverless
-frameworkVersion: "3"
-
-useDotenv: true
+frameworkVersion: "4"
 
 provider:
     name: aws
     runtime: nodejs20.x
     region: us-west-1
-    websocketApiRouteselectionExpression: $request.body.action
     httpApi:
         authorizers:
             jwtCognitoAuthorizer:
@@ -27,6 +24,10 @@ provider:
             Ref: CognitoUserPool
         COGNITO_USER_POOL_CLIENT:
             Ref: CognitoUserPoolClient
+        WEBSOCKET_CONNECTIONS_TABLE:
+            Ref: WebSocketConnectionsTable
+        DOCUMENTS_TABLE:
+            Ref: DocumentsTable
         CORS_ORIGIN: ${self:custom.corsOrigin}
         WEBSOCKET_API_ENDPOINT:
             Fn::Join:
@@ -38,6 +39,8 @@ provider:
 
 package:
     individually: true
+    patterns:
+        - '!node_modules/*'
 
 functions: ${file(./serverless-functions.yml)}
 
@@ -68,16 +71,49 @@ resources:
                 ExplicitAuthFlows:
                     - ALLOW_USER_PASSWORD_AUTH
                     - ALLOW_REFRESH_TOKEN_AUTH
+        WebSocketConnectionsTable:
+            Type: AWS::DynamoDB::Table
+            Properties:
+                AttributeDefinitions:
+                    - AttributeName: connectionId
+                      AttributeType: S
+                    - AttributeName: documentId
+                      AttributeType: S
+                KeySchema:
+                    - AttributeName: connectionId
+                      KeyType: HASH
+                GlobalSecondaryIndexes:
+                    - IndexName: documentId-index
+                      KeySchema:
+                          - AttributeName: documentId
+                            KeyType: HASH
+                      Projection:
+                          ProjectionType: ALL
+                      ProvisionedThroughput:
+                            ReadCapacityUnits: 1
+                            WriteCapacityUnits: 1
+                ProvisionedThroughput:
+                    ReadCapacityUnits: 1
+                    WriteCapacityUnits: 1
+        DocumentsTable:
+            Type: AWS::DynamoDB::Table
+            Properties:
+                AttributeDefinitions:
+                    - AttributeName: userId
+                      AttributeType: S
+                    - AttributeName: documentId
+                      AttributeType: S 
+                KeySchema:
+                    - AttributeName: userId
+                      KeyType: HASH
+                    - AttributeName: documentId
+                      KeyType: RANGE
+                ProvisionedThroughput:
+                    ReadCapacityUnits: 1
+                    WriteCapacityUnits: 1
 
 plugins:
-    - serverless-esbuild
     - serverless-iam-roles-per-function
-    - serverless-dotenv-plugin
 
 custom:
-    esbuild:
-        packager: pnpm
-        bundle: true
-        minify: true
-        keepNames: true
     corsOrigin: "*"
