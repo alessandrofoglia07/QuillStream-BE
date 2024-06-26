@@ -16,14 +16,12 @@ provider:
                         - - https://cognito-idp.
                           - Ref: AWS::Region
                           - .amazonaws.com/
-                          - Ref: CognitoUserPool
-                audience:
-                    - Ref: CognitoUserPoolClient
+                          - ${env:COGNITO_USER_POOL}
+                audience: ${env:COGNITO_USER_POOL_CLIENT}
     environment:
-        COGNITO_USER_POOL:
-            Ref: CognitoUserPool
-        COGNITO_USER_POOL_CLIENT:
-            Ref: CognitoUserPoolClient
+        COGNITO_USER_POOL: ${env:COGNITO_USER_POOL}
+        COGNITO_USER_POOL_CLIENT: ${env:COGNITO_USER_POOL_CLIENT}
+        COGNITO_USER_POOL_CLIENT_SECRET: ${env:COGNITO_USER_POOL_CLIENT_SECRET}
         WEBSOCKET_CONNECTIONS_TABLE:
             Ref: WebSocketConnectionsTable
         DOCUMENTS_TABLE:
@@ -46,31 +44,6 @@ functions: ${file(./serverless-functions.yml)}
 
 resources:
     Resources:
-        CognitoUserPool:
-            Type: AWS::Cognito::UserPool
-            Properties:
-                UserPoolName: ${sls:stage}-${self:service}
-                Policies:
-                    PasswordPolicy:
-                        MinimumLength: 6
-                        RequireLowercase: False
-                        RequireNumbers: True
-                        RequireSymbols: False
-                        RequireUppercase: False
-                UsernameAttributes:
-                    - email
-                AutoVerifiedAttributes:
-                    - email
-        CognitoUserPoolClient:
-            Type: AWS::Cognito::UserPoolClient
-            Properties:
-                ClientName: ${sls:stage}-${self:service}-userpool-client
-                GenerateSecret: False
-                UserPoolId:
-                    Ref: CognitoUserPool
-                ExplicitAuthFlows:
-                    - ALLOW_USER_PASSWORD_AUTH
-                    - ALLOW_REFRESH_TOKEN_AUTH
         WebSocketConnectionsTable:
             Type: AWS::DynamoDB::Table
             Properties:
