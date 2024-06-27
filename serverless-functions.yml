@@ -54,3 +54,11 @@ websocketUpdateDocument:
     events:
         - websocket:
               route: updateDocument
+
+customForgotPasswordMessage:
+    handler: src/functions/cognito/customForgotPasswordMessage.handler
+    events:
+        - cognitoUserPool:
+            pool: ${env:COGNITO_USER_POOL_NAME}
+            trigger: CustomMessage
+            existing: true

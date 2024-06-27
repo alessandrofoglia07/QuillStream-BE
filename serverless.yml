@@ -26,7 +26,7 @@ provider:
             Ref: WebSocketConnectionsTable
         DOCUMENTS_TABLE:
             Ref: DocumentsTable
-        CORS_ORIGIN: ${self:custom.corsOrigin}
+        CORS_ORIGIN: ${self:custom.corsOrigin} # CHANGE THIS LATER
         WEBSOCKET_API_ENDPOINT:
             Fn::Join:
                 - ""
@@ -34,6 +34,7 @@ provider:
                   - ".execute-api"
                   - Ref: AWS::Region
                   - ".amazonaws.com/${sls:stage}"
+        CLIENT_URL: ${env:CLIENT_URL}
 
 package:
     individually: true
