@@ -1,0 +1,61 @@
+WebSocketConnectionsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+        # TODO: Could be changed on implementation
+        KeySchema:
+            - AttributeName: connectionId
+              KeyType: HASH
+            - AttributeName: documentId
+              KeyType: RANGE
+        AttributeDefinitions:
+            - AttributeName: connectionId
+              AttributeType: S
+            - AttributeName: documentId
+              AttributeType: S
+        ProvisionedThroughput:
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
+
+DocumentsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+        AttributeDefinitions:
+            - AttributeName: documentId
+              AttributeType: S 
+        KeySchema:
+            - AttributeName: documentId
+              KeyType: HASH
+        ProvisionedThroughput:
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
+
+UserDocumentsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+        AttributeDefinitions:
+            - AttributeName: userId
+              AttributeType: S
+            - AttributeName: documentId
+              AttributeType: S
+            - AttributeName: lastAccessedAt
+              AttributeType: S
+        KeySchema:
+            - AttributeName: userId
+              KeyType: HASH
+            - AttributeName: documentId
+              KeyType: RANGE
+        ProvisionedThroughput:
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
+        GlobalSecondaryIndexes:
+            - IndexName: userId-lastAccessedAt-index
+              KeySchema:
+                  - AttributeName: userId
+                    KeyType: HASH
+                  - AttributeName: lastAccessedAt
+                    KeyType: RANGE
+              Projection:
+                  ProjectionType: ALL
+              ProvisionedThroughput:
+                  ReadCapacityUnits: 1
+                  WriteCapacityUnits: 1

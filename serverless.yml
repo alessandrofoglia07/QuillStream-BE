@@ -26,6 +26,8 @@ provider:
             Ref: WebSocketConnectionsTable
         DOCUMENTS_TABLE:
             Ref: DocumentsTable
+        USER_DOCUMENTS_TABLE:
+            Ref: UserDocumentsTable
         CORS_ORIGIN: ${self:custom.corsOrigin} # CHANGE THIS LATER
         WEBSOCKET_API_ENDPOINT:
             Fn::Join:
@@ -45,46 +47,7 @@ functions: ${file(./serverless-functions.yml)}
 
 resources:
     Resources:
-        WebSocketConnectionsTable:
-            Type: AWS::DynamoDB::Table
-            Properties:
-                AttributeDefinitions:
-                    - AttributeName: connectionId
-                      AttributeType: S
-                    - AttributeName: documentId
-                      AttributeType: S
-                KeySchema:
-                    - AttributeName: connectionId
-                      KeyType: HASH
-                GlobalSecondaryIndexes:
-                    - IndexName: documentId-index
-                      KeySchema:
-                          - AttributeName: documentId
-                            KeyType: HASH
-                      Projection:
-                          ProjectionType: ALL
-                      ProvisionedThroughput:
-                            ReadCapacityUnits: 1
-                            WriteCapacityUnits: 1
-                ProvisionedThroughput:
-                    ReadCapacityUnits: 1
-                    WriteCapacityUnits: 1
-        DocumentsTable:
-            Type: AWS::DynamoDB::Table
-            Properties:
-                AttributeDefinitions:
-                    - AttributeName: userId
-                      AttributeType: S
-                    - AttributeName: documentId
-                      AttributeType: S 
-                KeySchema:
-                    - AttributeName: userId
-                      KeyType: HASH
-                    - AttributeName: documentId
-                      KeyType: RANGE
-                ProvisionedThroughput:
-                    ReadCapacityUnits: 1
-                    WriteCapacityUnits: 1
+        ${file(./serverless-dynamodbTables.yml)}
 
 plugins:
     - serverless-iam-roles-per-function
