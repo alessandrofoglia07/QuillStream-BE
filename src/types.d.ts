@@ -1,10 +1,12 @@
 export interface Document {
     documentId: string; // partition key
     authorId: string;
+    authorName: string;
+    title: string;
     content: string;
     editors: string[];
     createdAt: string;
-    lastAccessedAt: string;
+    updatedAt: string;
 }
 
 export interface UserDocument {
@@ -14,6 +16,14 @@ export interface UserDocument {
     lastAccessedAt: string;
     createdAt: string;
 }
+
+export type FullDocument = Document & {
+    user: {
+        userId: string;
+        role: 'author' | 'editor';
+        lastAccessedAt: string;
+    };
+};
 
 export interface WebSocketConnection {
     connectionId: string; // partition key
