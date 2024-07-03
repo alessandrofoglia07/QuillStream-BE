@@ -8,8 +8,9 @@ declare global {
 
             readonly WEBSOCKET_CONNECTIONS_TABLE: string;
             readonly DOCUMENTS_TABLE: string;
+            readonly USER_DOCUMENTS_TABLE: string;
 
-            readonly WEBSOCKET_API_ENDPOINT: string;
+            readonly CORS_ORIGIN: string;
             readonly CLIENT_URL: string;
         }
     }

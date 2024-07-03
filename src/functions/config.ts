@@ -1,6 +1,0 @@
-export const DOCUMENT_TABLE = process.env.DOCUMENTS_TABLE;
-export const CORS_ORIGIN = process.env.CORS_ORIGIN;
-export const WEBSOCKET_API_ENDPOINT = process.env.WEBSOCKET_API_ENDPOINT;
-export const WEBSOCKET_CONNECTIONS_TABLE = process.env.WEBSOCKET_CONNECTIONS_TABLE;
-export const COGNITO_USER_POOL = process.env.COGNITO_USER_POOL;
-export const COGNITO_USER_POOL_CLIENT = process.env.COGNITO_USER_POOL_CLIENT;

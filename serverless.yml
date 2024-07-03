@@ -18,10 +18,13 @@ provider:
                           - .amazonaws.com/
                           - ${env:COGNITO_USER_POOL}
                 audience: ${env:COGNITO_USER_POOL_CLIENT}
+        cors:
+            allowedOrigins:
+                - ${env:CLIENT_URL}
+            allowCredentials: true
     environment:
         COGNITO_USER_POOL: ${env:COGNITO_USER_POOL}
         COGNITO_USER_POOL_CLIENT: ${env:COGNITO_USER_POOL_CLIENT}
-        COGNITO_USER_POOL_CLIENT_SECRET: ${env:COGNITO_USER_POOL_CLIENT_SECRET}
         WEBSOCKET_CONNECTIONS_TABLE:
             Ref: WebSocketConnectionsTable
         DOCUMENTS_TABLE:
@@ -29,13 +32,6 @@ provider:
         USER_DOCUMENTS_TABLE:
             Ref: UserDocumentsTable
         CORS_ORIGIN: ${self:custom.corsOrigin} # CHANGE THIS LATER
-        WEBSOCKET_API_ENDPOINT:
-            Fn::Join:
-                - ""
-                - - Ref: WebsocketsApi
-                  - ".execute-api"
-                  - Ref: AWS::Region
-                  - ".amazonaws.com/${sls:stage}"
         CLIENT_URL: ${env:CLIENT_URL}
 
 package:
@@ -54,3 +50,4 @@ plugins:
 
 custom:
     corsOrigin: "*"
+    dynamodbTableUrl: "arn:aws:dynamodb:${self:provider.region}:*:table"

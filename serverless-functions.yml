@@ -14,6 +14,25 @@ getDocumentsByUser:
               method: get
               authorizer:
                   name: jwtCognitoAuthorizer
+    iamRoleStatements:
+        - Effect: Allow
+          Action:
+              - dynamodb:Query
+          Resource:
+            Fn::Join:
+                - "/"
+                - - ${self:custom.dynamodbTableUrl}
+                  - Ref: UserDocumentsTable
+                  - index
+                  - userId-lastAccessedAt-index
+        - Effect: Allow
+          Action:
+              - dynamodb:GetItem
+          Resource:
+            Fn::Join:
+                - "/"
+                - - ${self:custom.dynamodbTableUrl}
+                  - Ref: DocumentsTable
 getDocument:
     handler: src/functions/http/getDocument.handler
     events:
