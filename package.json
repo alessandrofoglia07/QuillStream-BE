@@ -17,6 +17,7 @@
         "@types/aws-lambda": "^8.10.137",
         "@types/eslint": "^8.44.2",
         "@types/node": "^20.6.3",
+        "@types/uuid": "^10.0.0",
         "@typescript-eslint/eslint-plugin": "^6.7.2",
         "@typescript-eslint/parser": "^6.7.2",
         "eslint": "^8.49.0",
@@ -24,5 +25,8 @@
         "prettier": "^3.0.3",
         "serverless-iam-roles-per-function": "^3.2.0",
         "typescript": "^5.2.2"
+    },
+    "dependencies": {
+        "uuid": "^10.0.0"
     }
 }

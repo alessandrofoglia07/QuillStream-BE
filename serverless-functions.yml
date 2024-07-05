@@ -6,6 +6,24 @@ createDocument:
               method: post
               authorizer:
                   name: jwtCognitoAuthorizer
+    iamRoleStatements:
+        - Effect: Allow
+          Action:
+              - dynamodb:Query
+              - dynamodb:PutItem
+          Resource: 
+            Fn::Join:
+                - "/"
+                - - ${self:custom.dynamodbTableUrl}
+                  - Ref: UserDocumentsTable
+        - Effect: Allow
+          Action:
+              - dynamodb:PutItem
+          Resource:
+            Fn::Join:
+                - "/"
+                - - ${self:custom.dynamodbTableUrl}
+                  - Ref: DocumentsTable
 getDocumentsByUser:
     handler: src/functions/http/getDocumentsByUser.handler
     events:
