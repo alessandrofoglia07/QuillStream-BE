@@ -23,6 +23,8 @@ provider:
                 - ${env:CLIENT_URL}
             allowCredentials: true
     environment:
+        SERVERLESS_AWS_REGION: 
+            Ref: AWS::Region
         COGNITO_USER_POOL: ${env:COGNITO_USER_POOL}
         COGNITO_USER_POOL_CLIENT: ${env:COGNITO_USER_POOL_CLIENT}
         WEBSOCKET_CONNECTIONS_TABLE:
@@ -50,4 +52,5 @@ plugins:
 
 custom:
     corsOrigin: "*"
-    dynamodbTableUrl: "arn:aws:dynamodb:${self:provider.region}:*:table"
+    dynamodbTableUrl: "arn:aws:dynamodb:${opt:region, self:provider.region}:${aws:accountId, '*'}:table"
+    

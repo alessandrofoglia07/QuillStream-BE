@@ -3,7 +3,7 @@ import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, QueryCommand, QueryCommandInput, GetCommand, GetCommandInput } from '@aws-sdk/lib-dynamodb';
 import { Document, FullDocument, UserDocument } from '../../types';
 
-const dynamoDB = new DynamoDBClient({ region: 'us-west-1' });
+const dynamoDB = new DynamoDBClient({ region: process.env.SERVERLESS_AWS_REGION });
 const ddbDocClient = DynamoDBDocumentClient.from(dynamoDB);
 
 export const handler: Handler = async (event: APIGatewayProxyEvent) => {

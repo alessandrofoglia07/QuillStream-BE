@@ -4,7 +4,7 @@ import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, PutCommand, PutCommandInput, QueryCommand, QueryCommandInput } from '@aws-sdk/lib-dynamodb';
 import { v4 as uuid } from 'uuid';
 
-const dynamoDB = new DynamoDBClient({ region: 'us-west-1' });
+const dynamoDB = new DynamoDBClient({ region: process.env.SERVERLESS_AWS_REGION });
 const ddbDocClient = DynamoDBDocumentClient.from(dynamoDB);
 
 function getLastNewDocumentNumber(documents: UserDocument[] | undefined): number | null {
