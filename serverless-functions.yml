@@ -19,6 +19,7 @@ createDocument:
         - Effect: Allow
           Action:
               - dynamodb:PutItem
+              - dynamodb:BatchGetItem
           Resource:
             Fn::Join:
                 - "/"
@@ -64,9 +65,19 @@ updateDocument:
     events:
         - httpApi:
               path: /documents/{id}
-              method: put
+              method: patch
               authorizer:
                   name: jwtCognitoAuthorizer
+    iamRoleStatements:
+        - Effect: Allow
+          Action: 
+            - dynamodb:GetItem
+            - dynamodb:UpdateItem
+          Resource: 
+            Fn::Join:
+                - "/"
+                - - ${self:custom.dynamodbTableUrl}
+                  - Ref: DocumentsTable
 deleteDocument:
     handler: src/functions/http/deleteDocument.handler
     events:

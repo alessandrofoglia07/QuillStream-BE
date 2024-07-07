@@ -12,7 +12,6 @@ export interface Document {
 export interface UserDocument {
     userId: string; // partition key
     documentId: string; // sort key
-    documentTitle: string;
     role: 'author' | 'editor';
     lastAccessedAt: string;
     createdAt: string;

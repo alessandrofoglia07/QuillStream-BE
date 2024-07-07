@@ -1,19 +1,19 @@
 import type { APIGatewayProxyEvent, Handler } from 'aws-lambda';
 import type { Document, UserDocument } from '../../types';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { DynamoDBDocumentClient, PutCommand, PutCommandInput, QueryCommand, QueryCommandInput } from '@aws-sdk/lib-dynamodb';
+import { DynamoDBDocumentClient, PutCommand, PutCommandInput, QueryCommand, QueryCommandInput, BatchGetCommand } from '@aws-sdk/lib-dynamodb';
 import { v4 as uuid } from 'uuid';
 
 const dynamoDB = new DynamoDBClient({ region: process.env.SERVERLESS_AWS_REGION });
 const ddbDocClient = DynamoDBDocumentClient.from(dynamoDB);
 
-function getLastNewDocumentNumber(documents: UserDocument[] | undefined): number | null {
+function getLastNewDocumentNumber(documents: Document[] | undefined): number | null {
     try {
         if (!Array.isArray(documents)) return null;
 
         // Filter documents that start with "New Document"
         const newDocumentTitles = documents
-            .map(doc => doc.documentTitle)
+            .map(doc => doc.title)
             .filter(title => title && title.startsWith("New Document"));
 
         if (newDocumentTitles.length === 0) return null;
@@ -58,12 +58,32 @@ export const handler: Handler = async (event: APIGatewayProxyEvent) => {
 
         const { Items } = await ddbDocClient.send(new QueryCommand(queryParams));
 
-        const lastNewDocumentNumber = getLastNewDocumentNumber(Items as UserDocument[]);
-
         let newDocumentTitle = 'New Document';
 
-        if (lastNewDocumentNumber !== null) {
-            newDocumentTitle += ` ${lastNewDocumentNumber + 1}`;
+        if (Items) {
+            let documents: Document[] = [];
+
+            // Get all documentIds
+            for (let i = 0; i < Items.length; i += 100) {
+                const { Responses } = await ddbDocClient.send(new BatchGetCommand({
+                    RequestItems: {
+                        [process.env.DOCUMENTS_TABLE]: {
+                            Keys: Items.slice(i, i + 100).map((item) => ({
+                                documentId: item.documentId as string
+                            }))
+                        }
+                    }
+                }));
+
+                if (Responses && Responses[process.env.DOCUMENTS_TABLE]) {
+                    documents = [...documents, ...Responses[process.env.DOCUMENTS_TABLE] as Document[]];
+                }
+            }
+
+            const lastNewDocumentNumber = getLastNewDocumentNumber(documents as Document[]);
+            if (lastNewDocumentNumber !== null) {
+                newDocumentTitle += ` ${lastNewDocumentNumber + 1}`;
+            }
         }
 
         const now = Date.now().toString();
@@ -82,7 +102,6 @@ export const handler: Handler = async (event: APIGatewayProxyEvent) => {
         const newUserDocument: UserDocument = {
             userId,
             documentId: newDocument.documentId,
-            documentTitle: newDocument.title,
             role: 'author',
             createdAt: now,
             lastAccessedAt: '-1'
