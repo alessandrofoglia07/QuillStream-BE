@@ -59,3 +59,14 @@ UserDocumentsTable:
               ProvisionedThroughput:
                   ReadCapacityUnits: 1
                   WriteCapacityUnits: 1
+            - IndexName: documentId-index
+              KeySchema:
+                  - AttributeName: documentId
+                    KeyType: HASH
+                  - AttributeName: userId
+                    KeyType: RANGE
+              Projection:
+                  ProjectionType: KEYS_ONLY
+              ProvisionedThroughput:
+                  ReadCapacityUnits: 1
+                  WriteCapacityUnits: 1
