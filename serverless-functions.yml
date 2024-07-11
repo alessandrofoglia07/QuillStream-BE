@@ -114,6 +114,23 @@ deleteDocument:
                 - "/"
                 - - ${self:custom.dynamodbTableUrl}
                   - Ref: UserDocumentsTable
+getDocumentsCountByUser:
+    handler: src/functions/http/getDocumentsCountByUser.handler
+    events:
+        - httpApi:
+              path: /documents/user/count
+              method: get
+              authorizer: 
+                  name: jwtCognitoAuthorizer
+    iamRoleStatements:
+        - Effect: Allow
+          Action:
+              - dynamodb:Query
+          Resource:
+            Fn::Join:
+                - "/"
+                - - ${self:custom.dynamodbTableUrl}
+                  - Ref: UserDocumentsTable
 
 websocketConnection:
     handler: src/functions/websocket/connection.handler
