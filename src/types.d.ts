@@ -29,4 +29,5 @@ export interface WebSocketConnection {
     connectionId: string; // partition key
     documentId: string; // sort key
     userId: string;
+    username: string;
 }

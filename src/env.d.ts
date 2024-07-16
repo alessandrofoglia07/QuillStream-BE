@@ -13,6 +13,7 @@ declare global {
             readonly CORS_ORIGIN: string;
             readonly CLIENT_URL: string;
             readonly SERVERLESS_AWS_REGION: string;
+            readonly WSSAPIGATEWAY_ENDPOINT: string;
         }
     }
 }
