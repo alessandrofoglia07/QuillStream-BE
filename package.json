@@ -11,6 +11,7 @@
     "author": "alessandrofoglia07",
     "license": "MIT",
     "devDependencies": {
+        "@aws-sdk/client-apigatewaymanagementapi": "^3.614.0",
         "@aws-sdk/client-cognito-identity-provider": "^3.564.0",
         "@aws-sdk/client-dynamodb": "^3.529.1",
         "@aws-sdk/lib-dynamodb": "^3.529.1",
