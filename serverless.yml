@@ -35,6 +35,13 @@ provider:
             Ref: UserDocumentsTable
         CORS_ORIGIN: ${self:custom.corsOrigin} # CHANGE THIS LATER
         CLIENT_URL: ${env:CLIENT_URL}
+        WSSAPIGATEWAY_ENDPOINT:
+            Fn::Join:
+                - ""
+                - - Ref: WebsocketsApi
+                  - ".execute-api"
+                  - Ref: AWS::Region
+                  - ".amazonaws.com/${sls:stage}"
 
 package:
     individually: true

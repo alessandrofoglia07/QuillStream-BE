@@ -1,20 +1,29 @@
 WebSocketConnectionsTable:
     Type: AWS::DynamoDB::Table
     Properties:
-        # TODO: Could be changed on implementation
         KeySchema:
-            - AttributeName: connectionId
-              KeyType: HASH
             - AttributeName: documentId
+              KeyType: HASH
+            - AttributeName: connectionId
               KeyType: RANGE
         AttributeDefinitions:
-            - AttributeName: connectionId
-              AttributeType: S
             - AttributeName: documentId
+              AttributeType: S
+            - AttributeName: connectionId
               AttributeType: S
         ProvisionedThroughput:
             ReadCapacityUnits: 1
             WriteCapacityUnits: 1
+        GlobalSecondaryIndexes:
+            - IndexName: connectionId-index
+              KeySchema:
+                  - AttributeName: connectionId
+                    KeyType: HASH
+              Projection: 
+                  ProjectionType: ALL
+              ProvisionedThroughput:
+                  ReadCapacityUnits: 1
+                  WriteCapacityUnits: 1
 
 DocumentsTable:
     Type: AWS::DynamoDB::Table

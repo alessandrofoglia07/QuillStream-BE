@@ -137,6 +137,7 @@ websocketConnection:
     events:
         - websocket:
               route: $connect
+        # TODO: add authorizer 
 websocketDisconnection:
     handler: src/functions/websocket/disconnection.handler
     events:
