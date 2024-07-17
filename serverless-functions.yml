@@ -137,7 +137,10 @@ websocketConnection:
     events:
         - websocket:
               route: $connect
-        # TODO: add authorizer 
+              authorizer:
+                  name: authWebsocket
+                  identitySource:
+                      - 'route.request.querystring.token'
     iamRoleStatements:
         - Effect: Allow
           Action: 
@@ -194,6 +197,8 @@ websocketUpdateDocument:
         - websocket:
               route: updateDocument
 
+authWebsocket:
+    handler: src/functions/cognito/authWebsocket.handler
 customForgotPasswordMessage:
     handler: src/functions/cognito/customForgotPasswordMessage.handler
     events:
