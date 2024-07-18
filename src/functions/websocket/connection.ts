@@ -10,19 +10,11 @@ const client = new DynamoDBClient({ region: process.env.SERVERLESS_AWS_REGION })
 const ddbDocClient = DynamoDBDocumentClient.from(client);
 
 export const handler: Handler = async (event: APIGatewayProxyEvent) => {
-    const { connectionId } = event.requestContext;
-    const { documentId } = event.queryStringParameters || {};
-    const userId = event.requestContext.authorizer!.jwt.claims.sub;
-    const username = event.requestContext.authorizer!.jwt.claims.username;
+    const documentId = event.queryStringParameters?.documentId;
 
-    if (!connectionId) {
-        return {
-            statusCode: 400,
-            body: JSON.stringify({
-                message: 'connectionId is required'
-            })
-        };
-    }
+    const connectionId = event.requestContext.connectionId!;
+    const userId = event.requestContext.authorizer!.sub;
+    const username = event.requestContext.authorizer!.username;
 
     if (!documentId) {
         return {
