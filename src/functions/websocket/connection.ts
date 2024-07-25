@@ -26,14 +26,14 @@ export const handler: Handler = async (event: APIGatewayProxyEvent) => {
     }
 
     try {
-        const existingConnectionId = await ddbDocClient.send(new GetCommand({
+        const { Item: existingConnectionId } = await ddbDocClient.send(new GetCommand({
             TableName: process.env.WEBSOCKET_CONNECTIONS_TABLE,
             Key: {
                 documentId, connectionId
             }
         }));
 
-        if (existingConnectionId.Item && await postToConnection((existingConnectionId.Item as WebSocketConnection).connectionId, JSON.stringify({ type: 'ping' }))) {
+        if (existingConnectionId && await postToConnection((existingConnectionId as WebSocketConnection).connectionId, JSON.stringify({ type: 'ping' }))) {
             return {
                 statusCode: 403,
                 body: JSON.stringify({
@@ -70,14 +70,14 @@ export const handler: Handler = async (event: APIGatewayProxyEvent) => {
 
         const newUserDocument = (await ddbDocClient.send(new UpdateCommand(updateParams))).Attributes;
 
-        const document = await ddbDocClient.send(new GetCommand({
+        const { Item: document } = await ddbDocClient.send(new GetCommand({
             TableName: process.env.DOCUMENTS_TABLE,
             Key: {
                 documentId
             }
         }));
 
-        const fullDoc = formatDocument(document.Item as Document, newUserDocument as UserDocument);
+        const fullDoc = formatDocument(document as Document, newUserDocument as UserDocument);
 
         return {
             statusCode: 200,
