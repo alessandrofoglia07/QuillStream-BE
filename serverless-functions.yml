@@ -162,35 +162,14 @@ websocketConnection:
     iamRoleStatements:
         - Effect: Allow
           Action: 
-              - dynamodb:GetItem
               - dynamodb:PutItem
+              - dynamodb:Query
+              - dynamodb:DeleteItem
           Resource:
               Fn::Join:
                 - "/"
                 - - ${self:custom.dynamodbTableUrl}
                   - Ref: WebSocketConnectionsTable
-        - Effect: Allow
-          Action: 
-              - dynamodb:UpdateItem
-          Resource:
-              Fn::Join:
-                - "/"
-                - - ${self:custom.dynamodbTableUrl}
-                  - Ref: UserDocumentsTable
-        - Effect: Allow
-          Action: 
-              - dynamodb:GetItem
-          Resource:
-              Fn::Join:
-                - "/"
-                - - ${self:custom.dynamodbTableUrl}
-                  - Ref: DocumentsTable
-websocketDisconnection:
-    handler: src/functions/websocket/disconnection.handler
-    events:
-        - websocket:
-              route: $disconnect
-    iamRoleStatements:
         - Effect: Allow
           Action: 
               - dynamodb:Query
@@ -200,7 +179,25 @@ websocketDisconnection:
                 - - ${self:custom.dynamodbTableUrl}
                   - Ref: WebSocketConnectionsTable
                   - index
-                  - connectionId-index
+                  - "*"
+        - Effect: Allow
+          Action: 
+              - dynamodb:UpdateItem
+          Resource:
+              Fn::Join:
+                - "/"
+                - - ${self:custom.dynamodbTableUrl}
+                  - Ref: UserDocumentsTable
+        - Effect: Allow
+          Action:
+              - execute-api:ManageConnections
+          Resource: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${WebsocketsApi}/*"
+websocketDisconnection:
+    handler: src/functions/websocket/disconnection.handler
+    events:
+        - websocket:
+              route: $disconnect
+    iamRoleStatements:
         - Effect: Allow
           Action: 
               - dynamodb:DeleteItem
@@ -209,6 +206,20 @@ websocketDisconnection:
                 - "/"
                 - - ${self:custom.dynamodbTableUrl}
                   - Ref: WebSocketConnectionsTable
+        - Effect: Allow
+          Action:
+              - dynamodb:Query
+          Resource:
+              Fn::Join:
+                - "/"
+                - - ${self:custom.dynamodbTableUrl}
+                  - Ref: WebSocketConnectionsTable
+                  - index
+                  - documentId-connectionId-index
+        - Effect: Allow
+          Action:
+              - execute-api:ManageConnections
+          Resource: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${WebsocketsApi}/*"
 websocketUpdateDocument:
     handler: src/functions/websocket/updateDocument.handler
     events:
