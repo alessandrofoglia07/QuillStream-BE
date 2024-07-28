@@ -1,10 +1,9 @@
 import type { APIGatewayProxyEvent, Handler } from 'aws-lambda';
 import { postToConnection } from '../../utils/postToConnection';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { DynamoDBDocumentClient, GetCommand, PutCommand, PutCommandInput, UpdateCommand, UpdateCommandInput } from '@aws-sdk/lib-dynamodb';
-import { Document, UserDocument, WebSocketConnection } from '../../types';
-import { notifyClients } from '../../utils/notifyClients';
-import { formatDocument } from '../../utils/formatDocument';
+import { DynamoDBDocumentClient, QueryCommand, PutCommand, PutCommandInput, UpdateCommand, UpdateCommandInput } from '@aws-sdk/lib-dynamodb';
+import { WebSocketConnection } from '../../types';
+import { postToDocument } from '../../utils/postToDocument';
 
 const client = new DynamoDBClient({ region: process.env.SERVERLESS_AWS_REGION });
 const ddbDocClient = DynamoDBDocumentClient.from(client);
@@ -12,9 +11,16 @@ const ddbDocClient = DynamoDBDocumentClient.from(client);
 export const handler: Handler = async (event: APIGatewayProxyEvent) => {
     const documentId = event.queryStringParameters?.documentId;
 
-    const connectionId = event.requestContext.connectionId!;
-    const userId = event.requestContext.authorizer!.sub;
-    const username = event.requestContext.authorizer!.username;
+    if (!event.requestContext.connectionId || !event.requestContext.authorizer) {
+        return {
+            statusCode: 400,
+            body: ''
+        };
+    }
+
+    const connectionId = event.requestContext.connectionId;
+    const userId = event.requestContext.authorizer.sub;
+    const username = event.requestContext.authorizer.username;
 
     if (!documentId) {
         return {
@@ -26,14 +32,16 @@ export const handler: Handler = async (event: APIGatewayProxyEvent) => {
     }
 
     try {
-        const { Item: existingConnectionId } = await ddbDocClient.send(new GetCommand({
+        const { Items } = await ddbDocClient.send(new QueryCommand({
             TableName: process.env.WEBSOCKET_CONNECTIONS_TABLE,
-            Key: {
-                documentId, connectionId
+            IndexName: 'userId-index',
+            KeyConditionExpression: 'userId = :userId',
+            ExpressionAttributeValues: {
+                ':userId': userId
             }
         }));
 
-        if (existingConnectionId && await postToConnection((existingConnectionId as WebSocketConnection).connectionId, JSON.stringify({ type: 'ping' }))) {
+        if (Items?.[0] && await postToConnection((Items[0] as WebSocketConnection).connectionId, JSON.stringify({ type: 'ping' }))) {
             return {
                 statusCode: 403,
                 body: JSON.stringify({
@@ -54,7 +62,7 @@ export const handler: Handler = async (event: APIGatewayProxyEvent) => {
 
         await ddbDocClient.send(new PutCommand(params));
 
-        notifyClients(documentId, JSON.stringify({ type: 'connection', message: `User ${username} connected.` }));
+        postToDocument(documentId, JSON.stringify({ type: 'connection', message: `User ${username} connected.` }));
 
         const updateParams: UpdateCommandInput = {
             TableName: process.env.USER_DOCUMENTS_TABLE,
@@ -64,26 +72,15 @@ export const handler: Handler = async (event: APIGatewayProxyEvent) => {
             UpdateExpression: 'SET lastAccessedAt = :lastAccessedAt',
             ExpressionAttributeValues: {
                 ':lastAccessedAt': Date.now().toString()
-            },
-            ReturnValues: 'ALL_NEW'
+            }
         };
 
-        const newUserDocument = (await ddbDocClient.send(new UpdateCommand(updateParams))).Attributes;
-
-        const { Item: document } = await ddbDocClient.send(new GetCommand({
-            TableName: process.env.DOCUMENTS_TABLE,
-            Key: {
-                documentId
-            }
-        }));
-
-        const fullDoc = formatDocument(document as Document, newUserDocument as UserDocument);
+        await ddbDocClient.send(new UpdateCommand(updateParams));
 
         return {
             statusCode: 200,
             body: JSON.stringify({
-                message: 'Connection established',
-                document: fullDoc
+                message: 'Connection established'
             })
         };
     } catch (err) {
