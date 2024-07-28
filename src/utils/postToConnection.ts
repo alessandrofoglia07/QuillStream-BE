@@ -9,6 +9,11 @@ const apiGateway = new ApiGatewayManagementApi({
     endpoint: process.env.WSSAPIGATEWAY_ENDPOINT
 });
 
+/**
+ * Authorization needed:
+ * - `dynamodb:DeleteItem` on table `${process.env.WEBSOCKET_CONNECTIONS_TABLE}`
+ * - `execute-api:ManageConnections` on resource `${process.env.WSSAPIGATEWAY_ENDPOINT}`
+ */
 export const postToConnection = async (connectionId: string, data: string): Promise<boolean> => {
     try {
         await apiGateway.postToConnection({
@@ -18,7 +23,7 @@ export const postToConnection = async (connectionId: string, data: string): Prom
 
         return true;
     } catch (err) {
-        if ((err as { statusCode: number, [key: string]: unknown; }).statusCode === 410) {
+        if ((err as { statusCode?: number, [key: string]: unknown; })?.statusCode === 410) {
             await ddbDocClient.send(new DeleteCommand({
                 TableName: process.env.WEBSOCKET_CONNECTIONS_TABLE,
                 Key: { connectionId }
