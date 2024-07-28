@@ -2,22 +2,33 @@ WebSocketConnectionsTable:
     Type: AWS::DynamoDB::Table
     Properties:
         KeySchema:
-            - AttributeName: documentId
-              KeyType: HASH
             - AttributeName: connectionId
-              KeyType: RANGE
+              KeyType: HASH
         AttributeDefinitions:
             - AttributeName: documentId
               AttributeType: S
             - AttributeName: connectionId
               AttributeType: S
+            - AttributeName: userId
+              AttributeType: S
         ProvisionedThroughput:
             ReadCapacityUnits: 1
             WriteCapacityUnits: 1
         GlobalSecondaryIndexes:
-            - IndexName: connectionId-index
+            - IndexName: documentId-connectionId-index # FIRST GSI
               KeySchema:
+                  - AttributeName: documentId
+                    KeyType: HASH
                   - AttributeName: connectionId
+                    KeyType: RANGE
+              Projection: 
+                  ProjectionType: ALL
+              ProvisionedThroughput:
+                  ReadCapacityUnits: 1
+                  WriteCapacityUnits: 1
+            - IndexName: userId-index # SECOND GSI
+              KeySchema:
+                  - AttributeName: userId
                     KeyType: HASH
               Projection: 
                   ProjectionType: ALL
