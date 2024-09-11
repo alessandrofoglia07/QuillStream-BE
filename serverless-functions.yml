@@ -165,6 +165,7 @@ websocketConnection:
               - dynamodb:PutItem
               - dynamodb:Query
               - dynamodb:DeleteItem
+              - dynamodb:GetItem
           Resource:
               Fn::Join:
                 - "/"

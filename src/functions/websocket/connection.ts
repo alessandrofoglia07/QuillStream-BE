@@ -1,7 +1,7 @@
 import type { APIGatewayProxyEvent, Handler } from 'aws-lambda';
 import { postToConnection } from '../../utils/postToConnection';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { DynamoDBDocumentClient, QueryCommand, PutCommand, PutCommandInput, UpdateCommand, UpdateCommandInput } from '@aws-sdk/lib-dynamodb';
+import { DynamoDBDocumentClient, QueryCommand, PutCommand, PutCommandInput, UpdateCommand, UpdateCommandInput, GetCommand } from '@aws-sdk/lib-dynamodb';
 import { WebSocketConnection } from '../../types';
 import { postToDocument } from '../../utils/postToDocument';
 
@@ -36,12 +36,23 @@ export const handler: Handler = async (event: APIGatewayProxyEvent) => {
             TableName: process.env.WEBSOCKET_CONNECTIONS_TABLE,
             IndexName: 'userId-index',
             KeyConditionExpression: 'userId = :userId',
+            FilterExpression: 'documentId = :documentId',
             ExpressionAttributeValues: {
-                ':userId': userId
+                ':userId': userId,
+                ':documentId': documentId
             }
         }));
 
-        if (Items?.[0] && await postToConnection((Items[0] as WebSocketConnection).connectionId, JSON.stringify({ type: 'ping' }))) {
+        const { Item } = await ddbDocClient.send(new GetCommand({
+            TableName: process.env.WEBSOCKET_CONNECTIONS_TABLE,
+            Key: {
+                connectionId
+            }
+        }));
+
+        if ((Items?.[0] && await postToConnection((Items[0] as WebSocketConnection).connectionId, JSON.stringify({ type: 'ping' }))) || (
+            Item && await postToConnection(Item.connectionId, JSON.stringify({ type: 'ping' }))
+        )) {
             return {
                 statusCode: 403,
                 body: JSON.stringify({
@@ -87,7 +98,8 @@ export const handler: Handler = async (event: APIGatewayProxyEvent) => {
         return {
             statusCode: 500,
             body: JSON.stringify({
-                message: 'Internal server error'
+                message: 'Internal server error',
+                err
             })
         };
     }
