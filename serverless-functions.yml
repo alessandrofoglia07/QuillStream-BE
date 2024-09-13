@@ -219,12 +219,54 @@ websocketDisconnection:
         - Effect: Allow
           Action:
               - execute-api:ManageConnections
-          Resource: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${WebsocketsApi}/*"
-websocketUpdateDocument:
-    handler: src/functions/websocket/updateDocument.handler
+          Resource: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${WebsocketsApi}/*'
+websocketSyncUpdate:
+    handler: src/functions/websocket/syncUpdate.handler
     events:
         - websocket:
-              route: updateDocument
+              route: sync-update # custom route for Yjs sync-update messages
+    iamRoleStatements:
+        - Effect: Allow
+          Action:
+              - dynamodb:Query
+          Resource:
+              Fn::Join:
+                  - '/'
+                  - - ${self:custom.dynamodbTableUrl}
+                    - Ref: WebSocketConnectionsTable
+                    - index
+                    - documentId-connectionId-index
+        - Effect: Allow
+          Action:
+              - dynamodb:DeleteItem
+          Resource:
+              Fn::Join:
+                  - '/'
+                  - - ${self:custom.dynamodbTableUrl}
+                    - Ref: WebSocketConnectionsTable
+        - Effect: Allow
+          Action:
+              - execute-api:ManageConnections
+          Resource: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${WebsocketsApi}/*'
+websocketCleanUpConnections:
+    handler: src/functions/websocket/cleanUpConnections.handler
+    events:
+        - schedule:
+              rate: rate(15 minutes) # schedule to run every 15 minutes to clean up disconnected connections (rate could change in the future)
+    iamRoleStatements:
+        - Effect: Allow
+          Action:
+              - dynamodb:DeleteItem
+              - dynamodb:Scan
+          Resource:
+              Fn::Join:
+                  - '/'
+                  - - ${self:custom.dynamodbTableUrl}
+                    - Ref: WebSocketConnectionsTable
+        - Effect: Allow
+          Action:
+              - execute-api:ManageConnections
+          Resource: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${WebsocketsApi}/*'
 
 authWebsocket:
     handler: src/functions/cognito/authWebsocket.handler
@@ -232,6 +274,6 @@ customForgotPasswordMessage:
     handler: src/functions/cognito/customForgotPasswordMessage.handler
     events:
         - cognitoUserPool:
-            pool: ${env:COGNITO_USER_POOL_NAME}
-            trigger: CustomMessage
-            existing: true
+              pool: ${env:COGNITO_USER_POOL_NAME}
+              trigger: CustomMessage
+              existing: true
