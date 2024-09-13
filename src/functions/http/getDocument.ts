@@ -21,21 +21,7 @@ export const handler: Handler = async (event: APIGatewayProxyEvent) => {
             };
         }
 
-        const params: GetCommandInput = {
-            TableName: process.env.DOCUMENTS_TABLE,
-            Key: { documentId }
-        };
-        const { Item: document } = await ddbDocClient.send(new GetCommand(params));
-
-        if (!document) {
-            return {
-                statusCode: 404,
-                body: JSON.stringify({
-                    message: 'Document not found'
-                })
-            };
-        }
-
+        // check if the user has access to the document
         const userParams: GetCommandInput = {
             TableName: process.env.USER_DOCUMENTS_TABLE,
             Key: {
@@ -50,6 +36,21 @@ export const handler: Handler = async (event: APIGatewayProxyEvent) => {
                 statusCode: 403,
                 body: JSON.stringify({
                     message: 'Unauthorized'
+                })
+            };
+        }
+
+        const params: GetCommandInput = {
+            TableName: process.env.DOCUMENTS_TABLE,
+            Key: { documentId }
+        };
+        const { Item: document } = await ddbDocClient.send(new GetCommand(params));
+
+        if (!document) {
+            return {
+                statusCode: 404,
+                body: JSON.stringify({
+                    message: 'Document not found'
                 })
             };
         }

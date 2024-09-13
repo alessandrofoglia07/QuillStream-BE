@@ -32,6 +32,7 @@ export const handler: Handler = async (event: APIGatewayProxyEvent) => {
     }
 
     try {
+        // check if connection already exists
         const { Items } = await ddbDocClient.send(new QueryCommand({
             TableName: process.env.WEBSOCKET_CONNECTIONS_TABLE,
             IndexName: 'userId-index',
@@ -61,7 +62,7 @@ export const handler: Handler = async (event: APIGatewayProxyEvent) => {
             };
         }
 
-        const params: PutCommandInput = {
+        const connectionParams: PutCommandInput = {
             TableName: process.env.WEBSOCKET_CONNECTIONS_TABLE,
             Item: {
                 documentId,
@@ -71,8 +72,10 @@ export const handler: Handler = async (event: APIGatewayProxyEvent) => {
             }
         };
 
-        await ddbDocClient.send(new PutCommand(params));
+        // create connection
+        await ddbDocClient.send(new PutCommand(connectionParams));
 
+        // alert document of new connection
         postToDocument(documentId, JSON.stringify({ type: 'connection', message: `User ${username} connected.` }));
 
         const updateParams: UpdateCommandInput = {
@@ -86,6 +89,7 @@ export const handler: Handler = async (event: APIGatewayProxyEvent) => {
             }
         };
 
+        // update userdocument object
         await ddbDocClient.send(new UpdateCommand(updateParams));
 
         return {
@@ -98,8 +102,7 @@ export const handler: Handler = async (event: APIGatewayProxyEvent) => {
         return {
             statusCode: 500,
             body: JSON.stringify({
-                message: 'Internal server error',
-                err
+                message: 'Internal server error'
             })
         };
     }

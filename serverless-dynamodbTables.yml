@@ -21,7 +21,7 @@ WebSocketConnectionsTable:
                     KeyType: HASH
                   - AttributeName: connectionId
                     KeyType: RANGE
-              Projection: 
+              Projection:
                   ProjectionType: ALL
               ProvisionedThroughput:
                   ReadCapacityUnits: 1
@@ -30,7 +30,7 @@ WebSocketConnectionsTable:
               KeySchema:
                   - AttributeName: userId
                     KeyType: HASH
-              Projection: 
+              Projection:
                   ProjectionType: ALL
               ProvisionedThroughput:
                   ReadCapacityUnits: 1
@@ -41,7 +41,7 @@ DocumentsTable:
     Properties:
         AttributeDefinitions:
             - AttributeName: documentId
-              AttributeType: S 
+              AttributeType: S
         KeySchema:
             - AttributeName: documentId
               KeyType: HASH

@@ -1,5 +1,5 @@
 service: QuillStream-serverless
-frameworkVersion: "4"
+frameworkVersion: '4'
 
 provider:
     name: aws
@@ -12,7 +12,7 @@ provider:
                 identitySource: $request.header.Authorization
                 issuerUrl:
                     Fn::Join:
-                        - ""
+                        - ''
                         - - https://cognito-idp.
                           - Ref: AWS::Region
                           - .amazonaws.com/
@@ -23,7 +23,7 @@ provider:
                 - ${env:CLIENT_URL}
             allowCredentials: true
     environment:
-        SERVERLESS_AWS_REGION: 
+        SERVERLESS_AWS_REGION:
             Ref: AWS::Region
         COGNITO_USER_POOL: ${env:COGNITO_USER_POOL}
         COGNITO_USER_POOL_CLIENT: ${env:COGNITO_USER_POOL_CLIENT}
@@ -37,11 +37,11 @@ provider:
         CLIENT_URL: ${env:CLIENT_URL}
         WSSAPIGATEWAY_ENDPOINT:
             Fn::Join:
-                - ""
+                - ''
                 - - Ref: WebsocketsApi
-                  - ".execute-api."
+                  - '.execute-api.'
                   - Ref: AWS::Region
-                  - ".amazonaws.com/${sls:stage}"
+                  - '.amazonaws.com/${sls:stage}'
 
 package:
     individually: true
@@ -51,13 +51,11 @@ package:
 functions: ${file(./serverless-functions.yml)}
 
 resources:
-    Resources:
-        ${file(./serverless-dynamodbTables.yml)}
+    Resources: ${file(./serverless-dynamodbTables.yml)}
 
 plugins:
     - serverless-iam-roles-per-function
 
 custom:
-    corsOrigin: "*"
+    corsOrigin: '*'
     dynamodbTableUrl: "arn:aws:dynamodb:${opt:region, self:provider.region}:${aws:accountId, '*'}:table"
-    

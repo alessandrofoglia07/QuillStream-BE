@@ -8,14 +8,29 @@ const ddbDocClient = DynamoDBDocumentClient.from(client);
 
 export const handler: Handler = async (event: APIGatewayProxyEvent) => {
     try {
-        const userId = event.requestContext.authorizer!.jwt.claims.sub;
-        const documentId = event.pathParameters?.id;
-        const body = JSON.parse(event.body || '{}');
+        const userId = event.requestContext?.authorizer?.jwt?.claims?.sub;
+        if (!userId) {
+            return {
+                statusCode: 401,
+                body: JSON.stringify({ message: 'Unauthorized' })
+            };
+        }
 
+        const documentId = event.pathParameters?.id;
         if (!documentId) {
             return {
                 statusCode: 400,
                 body: JSON.stringify({ message: 'Document ID is required' })
+            };
+        }
+
+        let body: { title?: string, content?: string; };
+        try {
+            body = JSON.parse(event.body || '{}');
+        } catch {
+            return {
+                statusCode: 400,
+                body: JSON.stringify({ message: 'Invalid JSON body' })
             };
         }
 
@@ -28,7 +43,7 @@ export const handler: Handler = async (event: APIGatewayProxyEvent) => {
             };
         }
 
-        if (title.length > 100) {
+        if (title && title.length > 100) {
             return {
                 statusCode: 400,
                 body: JSON.stringify({ message: 'Title cannot be longer than 100 characters' })

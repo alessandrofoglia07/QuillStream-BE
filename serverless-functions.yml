@@ -11,20 +11,20 @@ createDocument:
           Action:
               - dynamodb:Query
               - dynamodb:PutItem
-          Resource: 
-            Fn::Join:
-                - "/"
-                - - ${self:custom.dynamodbTableUrl}
-                  - Ref: UserDocumentsTable
+          Resource:
+              Fn::Join:
+                  - '/'
+                  - - ${self:custom.dynamodbTableUrl}
+                    - Ref: UserDocumentsTable
         - Effect: Allow
           Action:
               - dynamodb:PutItem
               - dynamodb:BatchGetItem
           Resource:
-            Fn::Join:
-                - "/"
-                - - ${self:custom.dynamodbTableUrl}
-                  - Ref: DocumentsTable
+              Fn::Join:
+                  - '/'
+                  - - ${self:custom.dynamodbTableUrl}
+                    - Ref: DocumentsTable
 getDocumentsByUser:
     handler: src/functions/http/getDocumentsByUser.handler
     events:
@@ -38,20 +38,20 @@ getDocumentsByUser:
           Action:
               - dynamodb:Query
           Resource:
-            Fn::Join:
-                - "/"
-                - - ${self:custom.dynamodbTableUrl}
-                  - Ref: UserDocumentsTable
-                  - index
-                  - userId-lastAccessedAt-index
+              Fn::Join:
+                  - '/'
+                  - - ${self:custom.dynamodbTableUrl}
+                    - Ref: UserDocumentsTable
+                    - index
+                    - userId-lastAccessedAt-index
         - Effect: Allow
           Action:
               - dynamodb:GetItem
           Resource:
-            Fn::Join:
-                - "/"
-                - - ${self:custom.dynamodbTableUrl}
-                  - Ref: DocumentsTable
+              Fn::Join:
+                  - '/'
+                  - - ${self:custom.dynamodbTableUrl}
+                    - Ref: DocumentsTable
 getDocument:
     handler: src/functions/http/getDocument.handler
     events:
@@ -65,19 +65,18 @@ getDocument:
           Action:
               - dynamodb:GetItem
           Resource:
-            Fn::Join:
-                - "/"
-                - - ${self:custom.dynamodbTableUrl}
-                  - Ref: UserDocumentsTable
+              Fn::Join:
+                  - '/'
+                  - - ${self:custom.dynamodbTableUrl}
+                    - Ref: UserDocumentsTable
         - Effect: Allow
           Action:
               - dynamodb:GetItem
           Resource:
-            Fn::Join:
-                - "/"
-                - - ${self:custom.dynamodbTableUrl}
-                  - Ref: DocumentsTable
-
+              Fn::Join:
+                  - '/'
+                  - - ${self:custom.dynamodbTableUrl}
+                    - Ref: DocumentsTable
 updateDocument:
     handler: src/functions/http/updateDocument.handler
     events:
@@ -88,14 +87,14 @@ updateDocument:
                   name: jwtCognitoAuthorizer
     iamRoleStatements:
         - Effect: Allow
-          Action: 
-            - dynamodb:GetItem
-            - dynamodb:UpdateItem
-          Resource: 
-            Fn::Join:
-                - "/"
-                - - ${self:custom.dynamodbTableUrl}
-                  - Ref: DocumentsTable
+          Action:
+              - dynamodb:GetItem
+              - dynamodb:UpdateItem
+          Resource:
+              Fn::Join:
+                  - '/'
+                  - - ${self:custom.dynamodbTableUrl}
+                    - Ref: DocumentsTable
 deleteDocument:
     handler: src/functions/http/deleteDocument.handler
     events:
@@ -106,49 +105,49 @@ deleteDocument:
                   name: jwtCognitoAuthorizer
     iamRoleStatements:
         - Effect: Allow
-          Action: 
-            - dynamodb:GetItem
-            - dynamodb:DeleteItem
+          Action:
+              - dynamodb:GetItem
+              - dynamodb:DeleteItem
           Resource:
-            Fn::Join:
-                - "/"
-                - - ${self:custom.dynamodbTableUrl}
-                  - Ref: DocumentsTable
-        - Effect: Allow
-          Action: 
-            - dynamodb:Query
-          Resource:
-            Fn::Join:
-                - "/"
-                - - ${self:custom.dynamodbTableUrl}
-                  - Ref: UserDocumentsTable
-                  - index
-                  - documentId-index
+              Fn::Join:
+                  - '/'
+                  - - ${self:custom.dynamodbTableUrl}
+                    - Ref: DocumentsTable
         - Effect: Allow
           Action:
-            - dynamodb:BatchWriteItem
+              - dynamodb:Query
           Resource:
-            Fn::Join:
-                - "/"
-                - - ${self:custom.dynamodbTableUrl}
-                  - Ref: UserDocumentsTable
+              Fn::Join:
+                  - '/'
+                  - - ${self:custom.dynamodbTableUrl}
+                    - Ref: UserDocumentsTable
+                    - index
+                    - documentId-index
+        - Effect: Allow
+          Action:
+              - dynamodb:BatchWriteItem
+          Resource:
+              Fn::Join:
+                  - '/'
+                  - - ${self:custom.dynamodbTableUrl}
+                    - Ref: UserDocumentsTable
 getDocumentsCountByUser:
     handler: src/functions/http/getDocumentsCountByUser.handler
     events:
         - httpApi:
               path: /documents/user/count
               method: get
-              authorizer: 
+              authorizer:
                   name: jwtCognitoAuthorizer
     iamRoleStatements:
         - Effect: Allow
           Action:
               - dynamodb:Query
           Resource:
-            Fn::Join:
-                - "/"
-                - - ${self:custom.dynamodbTableUrl}
-                  - Ref: UserDocumentsTable
+              Fn::Join:
+                  - '/'
+                  - - ${self:custom.dynamodbTableUrl}
+                    - Ref: UserDocumentsTable
 
 websocketConnection:
     handler: src/functions/websocket/connection.handler
@@ -161,38 +160,38 @@ websocketConnection:
                       - 'route.request.querystring.token'
     iamRoleStatements:
         - Effect: Allow
-          Action: 
+          Action:
               - dynamodb:PutItem
               - dynamodb:Query
               - dynamodb:DeleteItem
               - dynamodb:GetItem
           Resource:
               Fn::Join:
-                - "/"
-                - - ${self:custom.dynamodbTableUrl}
-                  - Ref: WebSocketConnectionsTable
+                  - '/'
+                  - - ${self:custom.dynamodbTableUrl}
+                    - Ref: WebSocketConnectionsTable
         - Effect: Allow
-          Action: 
+          Action:
               - dynamodb:Query
           Resource:
               Fn::Join:
-                - "/"
-                - - ${self:custom.dynamodbTableUrl}
-                  - Ref: WebSocketConnectionsTable
-                  - index
-                  - "*"
+                  - '/'
+                  - - ${self:custom.dynamodbTableUrl}
+                    - Ref: WebSocketConnectionsTable
+                    - index
+                    - '*'
         - Effect: Allow
-          Action: 
+          Action:
               - dynamodb:UpdateItem
           Resource:
               Fn::Join:
-                - "/"
-                - - ${self:custom.dynamodbTableUrl}
-                  - Ref: UserDocumentsTable
+                  - '/'
+                  - - ${self:custom.dynamodbTableUrl}
+                    - Ref: UserDocumentsTable
         - Effect: Allow
           Action:
               - execute-api:ManageConnections
-          Resource: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${WebsocketsApi}/*"
+          Resource: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${WebsocketsApi}/*'
 websocketDisconnection:
     handler: src/functions/websocket/disconnection.handler
     events:
@@ -200,23 +199,23 @@ websocketDisconnection:
               route: $disconnect
     iamRoleStatements:
         - Effect: Allow
-          Action: 
+          Action:
               - dynamodb:DeleteItem
           Resource:
               Fn::Join:
-                - "/"
-                - - ${self:custom.dynamodbTableUrl}
-                  - Ref: WebSocketConnectionsTable
+                  - '/'
+                  - - ${self:custom.dynamodbTableUrl}
+                    - Ref: WebSocketConnectionsTable
         - Effect: Allow
           Action:
               - dynamodb:Query
           Resource:
               Fn::Join:
-                - "/"
-                - - ${self:custom.dynamodbTableUrl}
-                  - Ref: WebSocketConnectionsTable
-                  - index
-                  - documentId-connectionId-index
+                  - '/'
+                  - - ${self:custom.dynamodbTableUrl}
+                    - Ref: WebSocketConnectionsTable
+                    - index
+                    - documentId-connectionId-index
         - Effect: Allow
           Action:
               - execute-api:ManageConnections
