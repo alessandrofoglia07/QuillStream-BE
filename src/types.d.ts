@@ -31,3 +31,10 @@ export interface WebSocketConnection {
     userId: string;
     username: string;
 }
+
+export interface User {
+    userId: string;
+    name: string;
+    role: 'author' | 'editor';
+    appearance: number;
+}
