@@ -11,7 +11,7 @@ export const handler: Handler = async (event: APIGatewayProxyEvent) => {
         const userId = event.requestContext.authorizer!.jwt.claims.sub;
 
         const queryParams: QueryCommandInput = {
-            TableName: process.env.USER_DOCUMENTS_TABLE || 'UserDocumentsTable',
+            TableName: process.env.USER_DOCUMENTS_TABLE,
             IndexName: 'userId-lastAccessedAt-index',
             KeyConditionExpression: '#userId = :userId',
             ExpressionAttributeNames: {

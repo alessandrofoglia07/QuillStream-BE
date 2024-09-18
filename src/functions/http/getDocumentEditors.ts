@@ -1,7 +1,7 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, GetCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
 import { APIGatewayProxyEvent, Handler } from "aws-lambda";
-import { Document, User, UserDocument, WebSocketConnection } from "../../types";
+import { User, UserDocument, WebSocketConnection } from "../../types";
 import { AdminGetUserCommand, CognitoIdentityProviderClient } from "@aws-sdk/client-cognito-identity-provider";
 
 const client = new DynamoDBClient({ region: process.env.SERVERLESS_AWS_REGION });
@@ -36,22 +36,7 @@ export const handler: Handler = async (event: APIGatewayProxyEvent) => {
             };
         }
 
-        const editors = (document as Document).editors; // usernames of the editors
-
         const editorsData: User[] = [];
-
-        await Promise.all(editors.map(async (editorUsername: string) => {
-            const { UserAttributes } = await cognitoClient.send(new AdminGetUserCommand({
-                UserPoolId: process.env.COGNITO_USER_POOL,
-                Username: editorUsername
-            }));
-            editorsData.push({
-                username: editorUsername,
-                name: UserAttributes?.find(attr => attr.Name === 'name')?.Value || '',
-                appearance: parseInt(UserAttributes?.find(attr => attr.Name === 'custom:appearance')?.Value || '0'),
-                role: 'editor'
-            });
-        }));
 
         const { Items: userDocuments } = await ddbDocClient.send(new QueryCommand({
             TableName: process.env.USER_DOCUMENTS_TABLE,
@@ -63,12 +48,16 @@ export const handler: Handler = async (event: APIGatewayProxyEvent) => {
         }));
 
         for (const userDocument of userDocuments as UserDocument[]) {
-            if (userDocument.role === 'author') {
-                const editor = editorsData.find(editor => editor.username === userDocument.username);
-                if (!editor) return;
-                editor.role = 'author';
-                break;
-            }
+            const { UserAttributes } = await cognitoClient.send(new AdminGetUserCommand({
+                UserPoolId: process.env.COGNITO_USER_POOL,
+                Username: userDocument.username
+            }));
+            editorsData.push({
+                userId: userDocument.userId,
+                name: UserAttributes?.find(attr => attr.Name === 'name')?.Value || '',
+                appearance: parseInt(UserAttributes?.find(attr => attr.Name === 'custom:appearance')?.Value || '0'),
+                role: userDocument.role
+            });
         }
 
         const { Items: websocketConnections } = await ddbDocClient.send(new QueryCommand({
@@ -94,7 +83,7 @@ export const handler: Handler = async (event: APIGatewayProxyEvent) => {
         const inactiveEditors: User[] = [];
 
         for (const editor of editorsData) {
-            const connection = (websocketConnections as WebSocketConnection[])?.find(connection => connection.username === editor.username);
+            const connection = (websocketConnections as WebSocketConnection[])?.find(connection => connection.userId === editor.userId);
             if (connection) {
                 activeEditors.push(editor);
             } else {

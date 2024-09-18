@@ -102,6 +102,7 @@ export const handler: Handler = async (event: APIGatewayProxyEvent) => {
         const newUserDocument: UserDocument = {
             userId,
             documentId: newDocument.documentId,
+            username,
             role: 'author',
             createdAt: now,
             lastAccessedAt: '-1'
