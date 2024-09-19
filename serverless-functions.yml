@@ -189,6 +189,36 @@ getDocumentEditors:
                     - Ref: WebSocketConnectionsTable
                     - index
                     - documentId-connectionId-index
+addEditorToDocument:
+    handler: src/functions/http/addEditorToDocument.handler
+    events:
+        - httpApi:
+              path: /documents/{id}/editors
+              method: patch
+              authorizer:
+                  name: jwtCognitoAuthorizer
+    iamRoleStatements:
+        - Effect: Allow
+          Action:
+              - dynamodb:GetItem
+              - dynamodb:UpdateItem
+          Resource:
+              Fn::Join:
+                  - '/'
+                  - - ${self:custom.dynamodbTableUrl}
+                    - Ref: DocumentsTable
+        - Effect: Allow
+          Action:
+              - cognito-idp:AdminGetUser
+          Resource: !Sub 'arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${env:COGNITO_USER_POOL}'
+        - Effect: Allow
+          Action:
+              - dynamodb:PutItem
+          Resource:
+              Fn::Join:
+                  - '/'
+                  - - ${self:custom.dynamodbTableUrl}
+                    - Ref: UserDocumentsTable
 
 websocketConnection:
     handler: src/functions/websocket/connection.handler
