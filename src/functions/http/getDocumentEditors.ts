@@ -9,7 +9,6 @@ const ddbDocClient = DynamoDBDocumentClient.from(client);
 
 const cognitoClient = new CognitoIdentityProviderClient({ region: process.env.SERVERLESS_AWS_REGION });
 
-// TODO: Fix this
 export const handler: Handler = async (event: APIGatewayProxyEvent) => {
     const documentId = event.pathParameters?.id;
 
@@ -54,8 +53,8 @@ export const handler: Handler = async (event: APIGatewayProxyEvent) => {
             }));
             editorsData.push({
                 userId: userDocument.userId,
-                name: UserAttributes?.find(attr => attr.Name === 'name')?.Value || '',
-                appearance: parseInt(UserAttributes?.find(attr => attr.Name === 'custom:appearance')?.Value || '0'),
+                name: userDocument.username,
+                appearance: parseInt(UserAttributes?.find(attr => attr.Name === 'custom:appearance')?.Value || '1'),
                 role: userDocument.role
             });
         }
@@ -102,8 +101,7 @@ export const handler: Handler = async (event: APIGatewayProxyEvent) => {
         return {
             statusCode: 500,
             body: JSON.stringify({
-                message: 'Internal server error',
-                err
+                message: 'Internal server error'
             })
         };
     }
