@@ -6,7 +6,10 @@
         "lint": "eslint . --ext .ts",
         "lint:fix": "eslint . --ext .ts --fix",
         "format": "prettier --write .",
-        "format:check": "prettier --check ."
+        "format:check": "prettier --check .",
+        "dev": "serverless dev",
+        "deploy": "serverless deploy",
+        "build": "serverless package"
     },
     "author": "alessandrofoglia07",
     "license": "MIT",
